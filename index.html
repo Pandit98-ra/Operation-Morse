@@ -11,6 +11,8 @@
             --text-color: #f5f5f7;
             --accent-color: #00adb5;
             --border-color: #393e46;
+            --whatsapp-color: #25D366;
+            --mnemonic-bg: #2a2a35;
         }
 
         body {
@@ -31,7 +33,7 @@
             border-radius: 12px;
             box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
             width: 100%;
-            max-width: 650px;
+            max-width: 700px;
         }
 
         h1 {
@@ -92,14 +94,87 @@
             letter-spacing: 2px;
         }
 
+        .whatsapp-btn {
+            background-color: var(--whatsapp-color);
+            color: #ffffff;
+            border: none;
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            transition: background-color 0.2s, transform 0.1s;
+            text-decoration: none;
+            margin-top: 5px;
+        }
+
+        .whatsapp-btn:hover {
+            background-color: #20ba5a;
+        }
+
+        .whatsapp-btn:active {
+            transform: scale(0.98);
+        }
+
         .instructions {
-            margin-top: 15px;
+            margin-top: 20px;
             background-color: rgba(57, 62, 70, 0.3);
             padding: 12px;
             border-radius: 6px;
             font-size: 0.85rem;
             color: #a0a0a8;
             line-height: 1.4;
+        }
+
+        /* Chart Section Styling */
+        .chart-heading {
+            margin-top: 40px;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--accent-color);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 5px;
+        }
+
+        .mnemonic-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 12px;
+            margin-top: 15px;
+        }
+
+        .mnemonic-card {
+            background-color: var(--mnemonic-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 10px;
+            text-align: center;
+            transition: transform 0.2s, border-color 0.2s;
+        }
+
+        .mnemonic-card:hover {
+            transform: translateY(-2px);
+            border-color: var(--accent-color);
+        }
+
+        .letter-display {
+            font-size: 1.6rem;
+            font-weight: bold;
+            color: #ffffff;
+            margin-bottom: 4px;
+        }
+
+        .code-display {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.95rem;
+            color: var(--accent-color);
+            font-weight: bold;
         }
     </style>
 </head>
@@ -118,12 +193,20 @@
         <div class="box">
             <label for="morseInput">Morse Code</label>
             <textarea id="morseInput" class="morse-input" placeholder="... --- ..."></textarea>
+            
+            <button id="whatsappBtn" class="whatsapp-btn">
+                Send Morse on WhatsApp
+            </button>
         </div>
     </div>
 
     <div class="instructions">
-        <strong>Tip for Morse Code:</strong> Separate each letter with a single space, and use a forward slash (<code>/</code>) between words. Supports letters, numbers, and symbols!
+        <strong>Survival Tip:</strong> Separate individual Morse letters with a single space. Use a forward slash (<code>/</code>) between completed words.
     </div>
+
+    <h2 class="chart-heading">Mnemonic Reference Library</h2>
+    <div class="mnemonic-grid" id="mnemonicGrid">
+        </div>
 </div>
 
 <script>
@@ -151,50 +234,12 @@
 
     const textInput = document.getElementById('textInput');
     const morseInput = document.getElementById('morseInput');
+    const whatsappBtn = document.getElementById('whatsappBtn');
+    const mnemonicGrid = document.getElementById('mnemonicGrid');
 
-    function translateToMorse() {
-        const text = textInput.value.toUpperCase();
-        let morseResult = [];
-        const words = text.split(' ');
-        
-        for (let word of words) {
-            let morseWord = [];
-            for (let char of word) {
-                if (morseAlphabet[char]) {
-                    morseWord.push(morseAlphabet[char]);
-                }
-            }
-            morseResult.push(morseWord.join(' '));
-        }
-        morseInput.value = morseResult.filter(w => w.length > 0).join(' / ');
-    }
-
-    function translateToText() {
-        const morse = morseInput.value.trim();
-        if (morse === "") {
-            textInput.value = "";
-            return;
-        }
-
-        let textResult = [];
-        const morseWords = morse.split('/');
-
-        for (let mWord of morseWords) {
-            let cleanWord = mWord.trim().split(' ');
-            let textWord = "";
-            for (let mChar of cleanWord) {
-                if (textAlphabet[mChar]) {
-                    textWord += textAlphabet[mChar];
-                }
-            }
-            if (textWord) textResult.push(textWord);
-        }
-        textInput.value = textResult.join(' ');
-    }
-
-    textInput.addEventListener('input', translateToMorse);
-    morseInput.addEventListener('input', translateToText);
-</script>
-
-</body>
-</html>
+    // Automatically build the cheat sheet grid from dictionary data
+    for (const [letter, code] of Object.entries(morseAlphabet)) {
+        // Only display alphanumeric entries in the quick view to keep it clean
+        if (letter.match(/[A-Z0-9]/)) {
+            const card = document.createElement('div');
+            card.className
