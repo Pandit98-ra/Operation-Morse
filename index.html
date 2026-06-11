@@ -12,7 +12,6 @@
             --accent-color: #00adb5;
             --border-color: #393e46;
             --whatsapp-color: #25D366;
-            --mnemonic-bg: #2a2a35;
         }
 
         body {
@@ -33,7 +32,7 @@
             border-radius: 12px;
             box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
             width: 100%;
-            max-width: 700px;
+            max-width: 650px;
         }
 
         h1 {
@@ -129,53 +128,6 @@
             color: #a0a0a8;
             line-height: 1.4;
         }
-
-        /* Chart Section Styling */
-        .chart-heading {
-            margin-top: 40px;
-            margin-bottom: 15px;
-            font-size: 1.2rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: var(--accent-color);
-            border-bottom: 1px solid var(--border-color);
-            padding-bottom: 5px;
-        }
-
-        .mnemonic-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-            gap: 12px;
-            margin-top: 15px;
-        }
-
-        .mnemonic-card {
-            background-color: var(--mnemonic-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 10px;
-            text-align: center;
-            transition: transform 0.2s, border-color 0.2s;
-        }
-
-        .mnemonic-card:hover {
-            transform: translateY(-2px);
-            border-color: var(--accent-color);
-        }
-
-        .letter-display {
-            font-size: 1.6rem;
-            font-weight: bold;
-            color: #ffffff;
-            margin-bottom: 4px;
-        }
-
-        .code-display {
-            font-family: 'Courier New', Courier, monospace;
-            font-size: 0.95rem;
-            color: var(--accent-color);
-            font-weight: bold;
-        }
     </style>
 </head>
 <body>
@@ -201,12 +153,8 @@
     </div>
 
     <div class="instructions">
-        <strong>Survival Tip:</strong> Separate individual Morse letters with a single space. Use a forward slash (<code>/</code>) between completed words.
+        <strong>Tip for Morse Code:</strong> Separate each letter with a single space, and use a forward slash (<code>/</code>) between words. Supports letters, numbers, and symbols!
     </div>
-
-    <h2 class="chart-heading">Mnemonic Reference Library</h2>
-    <div class="mnemonic-grid" id="mnemonicGrid">
-        </div>
 </div>
 
 <script>
@@ -235,11 +183,76 @@
     const textInput = document.getElementById('textInput');
     const morseInput = document.getElementById('morseInput');
     const whatsappBtn = document.getElementById('whatsappBtn');
-    const mnemonicGrid = document.getElementById('mnemonicGrid');
 
-    // Automatically build the cheat sheet grid from dictionary data
-    for (const [letter, code] of Object.entries(morseAlphabet)) {
-        // Only display alphanumeric entries in the quick view to keep it clean
-        if (letter.match(/[A-Z0-9]/)) {
-            const card = document.createElement('div');
-            card.className
+    // Convert Text -> Morse
+    function translateToMorse() {
+        const text = textInput.value.toUpperCase();
+        let morseResult = [];
+        const words = text.split(' ');
+        
+        for (let word of words) {
+            let morseWord = [];
+            for (let char of word) {
+                if (morseAlphabet[char]) {
+                    morseWord.push(morseAlphabet[char]);
+                }
+            }
+            if (morseWord.length > 0) {
+                morseResult.push(morseWord.join(' '));
+            }
+        }
+        
+        // Temporarily remove listener to prevent infinite loops
+        morseInput.removeEventListener('input', translateToText);
+        morseInput.value = morseResult.join(' / ');
+        morseInput.addEventListener('input', translateToText);
+    }
+
+    // Convert Morse -> Text
+    function translateToText() {
+        const morse = morseInput.value.trim();
+        if (morse === "") {
+            textInput.removeEventListener('input', translateToMorse);
+            textInput.value = "";
+            textInput.addEventListener('input', translateToMorse);
+            return;
+        }
+
+        let textResult = [];
+        const morseWords = morse.split('/');
+
+        for (let mWord of morseWords) {
+            let cleanWord = mWord.trim().split(' ');
+            let textWord = "";
+            for (let mChar of cleanWord) {
+                if (textAlphabet[mChar]) {
+                    textWord += textAlphabet[mChar];
+                }
+            }
+            if (textWord) textResult.push(textWord);
+        }
+        
+        // Temporarily remove listener to prevent infinite loops
+        textInput.removeEventListener('input', translateToMorse);
+        textInput.value = textResult.join(' ');
+        textInput.addEventListener('input', translateToMorse);
+    }
+
+    // Send Morse code via WhatsApp
+    function sendToWhatsApp() {
+        const morseCode = morseInput.value.trim();
+        if (morseCode === "") {
+            alert("Please generate some Morse code first!");
+            return;
+        }
+        const encodedText = encodeURIComponent(morseCode);
+        window.open(`https://api.whatsapp.com/send?text=${encodedText}`, '_blank');
+    }
+
+    textInput.addEventListener('input', translateToMorse);
+    morseInput.addEventListener('input', translateToText);
+    whatsappBtn.addEventListener('click', sendToWhatsApp);
+</script>
+
+</body>
+</html>
