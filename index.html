@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Operation Morse</title>
+    <style>
+        :root {
+            --bg-color: #121214;
+            --card-bg: #1e1e24;
+            --text-color: #f5f5f7;
+            --accent-color: #00adb5;
+            --border-color: #393e46;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            background-color: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 650px;
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--accent-color);
+            margin-top: 0;
+            font-size: 2rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        p.subtitle {
+            text-align: center;
+            color: #8a8a93;
+            margin-bottom: 30px;
+            font-size: 0.95rem;
+        }
+
+        .translator-section {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .box {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        label {
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #b2b2b8;
+        }
+
+        textarea {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 1.1rem;
+            resize: vertical;
+            min-height: 100px;
+            transition: border-color 0.2s;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--accent-color);
+        }
+
+        .morse-input {
+            font-family: 'Courier New', Courier, monospace;
+            letter-spacing: 2px;
+        }
+
+        .instructions {
+            margin-top: 15px;
+            background-color: rgba(57, 62, 70, 0.3);
+            padding: 12px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            color: #a0a0a8;
+            line-height: 1.4;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>• — Operation Morse — •</h1>
+    <p class="subtitle">Real-time Text & Morse Code Converter</p>
+
+    <div class="translator-section">
+        <!-- Text to Morse Box -->
+        <div class="box">
+            <label for="textInput">Plain Text</label>
+            <textarea id="textInput" placeholder="Type your message here..."></textarea>
+        </div>
+
+        <!-- Morse to Text Box -->
+        <div class="box">
+            <label for="morseInput">Morse Code</label>
+            <textarea id="morseInput" class="morse-input" placeholder="... --- ..."></textarea>
+        </div>
+    </div>
+
+    <div class="instructions">
+        <strong>Tip for Morse Code:</strong> Separate each letter with a single space, and use a forward slash (<code>/</code>) between words.
+    </div>
+</div>
+
+<script>
+    // The Morse Code Dictionary mapping letters to code
+    const morseAlphabet = {
+        'A': '.-',    'B': '-...',  'C': '-.-.',  'D': '-..',
+        'E': '.',     'F': '..-.',  'G': '--.',   'H': '....',
+        'I': '..',    'J': '.---',  'K': '-.-',   'L': '.-..',
+        'M': '--',    'N': '-.',    'O': '---',   'P': '.--.',
+        'Q': '--.-',  'R': '.-.',   'S': '...',   'T': '-',
+        'U': '..-',   'V': '...-',  'W': '.--',   'X': '-..-',
+        'Y': '-.--',  'Z': '--..',  
+        '1': '.----', '2': '..---', '3': '...--', '4': '....-', '5': '.....',
+        '6': '-....', '7': '--...', '8': '---..', '9': '----.', '0': '-----'
+    };
+
+    // Create a reverse dictionary for decoding (Morse -> Text)
+    const textAlphabet = {};
+    for (const key in morseAlphabet) {
+        textAlphabet[morseAlphabet[key]] = key;
+    }
+
+    const textInput = document.getElementById('textInput');
+    const morseInput = document.getElementById('morseInput');
+
+    // Function to convert Plain Text to Morse
+    function translateToMorse() {
+        const text = textInput.value.toUpperCase();
+        let morseResult = [];
+        
+        // Split text into words based on spaces
+        const words = text.split(' ');
+        
+        for (let word of words) {
+            let morseWord = [];
+            for (let char of word) {
+                if (morseAlphabet[char]) {
+                    morseWord.push(morseAlphabet[char]);
+                }
+            }
+            // Join letters in a word with a single space
+            morseResult.push(morseWord.join(' '));
+        }
+        
+        // Join words with a slash ( / )
+        morseInput.value = morseResult.filter(w => w.length > 0).join(' / ');
+    }
+
+    // Function to convert Morse to Plain Text
+    function translateToText() {
+        const morse = morseInput.value.trim();
+        if (morse === "") {
+            textInput.value = "";
+            return;
+        }
+
+        let textResult = [];
+        // Split Morse into individual words using the slash separator
+        const morseWords = morse.split('/');
+
+        for (let mWord of morseWords) {
+            let cleanWord = mWord.trim().split(' ');
+            let textWord = "";
+            for (let mChar of cleanWord) {
+                if (textAlphabet[mChar]) {
+                    textWord += textAlphabet[mChar];
+                }
+            }
+            if (textWord) textResult.push(textWord);
+        }
+
+        // Join words back with a normal space
+        textInput.value = textResult.join(' ');
+    }
+
+    // Listen for typing events to translate instantly
+    textInput.addEventListener('input', translateToMorse);
+    morseInput.addEventListener('input', translateToText);
+</script>
+
+</body>
+</html>
